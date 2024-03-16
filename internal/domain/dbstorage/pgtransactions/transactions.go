@@ -73,8 +73,8 @@ func (ms *PGOrdersStorage) GetOrder(ctx context.Context, order *string) (*domain
 	const selectSQL = `select userid,number,status,amount,uploaded_at from transactions where number = $1 and type = 'ORDER'`
 	row := ms.dbConnections.QueryRowContext(ctx, selectSQL, order)
 	ret := domain.Order{}
-	var uploadetAt time.Time
-	err := row.Scan(&ret.UserID, &ret.Number, &ret.Status, &ret.Accrual, &uploadetAt)
+	var uploadedAt time.Time
+	err := row.Scan(&ret.UserID, &ret.Number, &ret.Status, &ret.Accrual, &uploadedAt)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
@@ -82,7 +82,7 @@ func (ms *PGOrdersStorage) GetOrder(ctx context.Context, order *string) (*domain
 		logger.Log.Error("Select user", zap.Error(err))
 		return nil, fmt.Errorf("select: %w", err)
 	}
-	ret.UploadedAt = domain.CustomTime(uploadetAt)
+	ret.UploadedAt = domain.CustomTime(uploadedAt)
 	return &ret, nil
 }
 
