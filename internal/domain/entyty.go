@@ -5,6 +5,9 @@ import (
 	"math"
 	"strconv"
 	"time"
+
+	"github.com/LobovVit/loyalty-system/pkg/logger"
+	"go.uber.org/zap"
 )
 
 type CustomTime time.Time
@@ -35,6 +38,7 @@ func (c *CustomMoney) UnmarshalJSON(data []byte) error {
 	}
 	tmp := CustomMoney(math.Round(v * fractionalNumber))
 	*c = tmp
+	logger.Log.Info("round errors", zap.Float64("float64", v), zap.Int64("float64", int64(*c)))
 	return nil
 }
 

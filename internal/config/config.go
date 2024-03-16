@@ -31,8 +31,8 @@ func GetConfig() (*Config, error) {
 
 	host := flag.String("a", "localhost:8081", "адрес и порт запуска сервиса") //localhost:8081
 	logLevel := flag.String("l", "info", "log level")
-	dsn := flag.String("d", "postgresql://postgres:password@10.66.66.3:5432/postgres?sslmode=disable", "строка подключения к БД") //postgresql://postgres:password@10.66.66.3:5432/postgres?sslmode=disable
-	accrualHost := flag.String("r", "http://localhost:8080", "адрес системы расчёта начислений")                                  //http://localhost:8080
+	dsn := flag.String("d", "", "строка подключения к БД")                                       //postgresql://postgres:password@10.66.66.3:5432/postgres?sslmode=disable
+	accrualHost := flag.String("r", "http://localhost:8080", "адрес системы расчёта начислений") //http://localhost:8080
 	salt := flag.String("s", "any-salt", "соль для хэша")
 	jwtkey := flag.String("k", "very-secret-key", "ключ для JWT")
 	jwtexp := flag.Int64("e", 3, "время жизни токена авторизации в часах")
