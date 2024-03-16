@@ -38,7 +38,7 @@ func (c *CustomMoney) UnmarshalJSON(data []byte) error {
 	}
 	tmp := CustomMoney(math.Round(v * fractionalNumber))
 	*c = tmp
-	logger.Log.Info("round errors", zap.Float64("float64", v), zap.Int64("float64", int64(*c)))
+	logger.Log.Debug("Round errors", zap.Float64("float64", v), zap.Int64("Int64", int64(*c)))
 	return nil
 }
 
