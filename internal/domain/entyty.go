@@ -3,7 +3,6 @@ package domain
 import (
 	"encoding/json"
 	"math"
-	"slices"
 	"strconv"
 	"time"
 
@@ -15,7 +14,6 @@ type CustomTime time.Time
 type CustomMoney int64
 
 const timeLayout = time.RFC3339
-const fractionalNumber = 100
 
 func (c CustomTime) MarshalJSON() ([]byte, error) {
 	t := time.Time(c)
@@ -24,23 +22,19 @@ func (c CustomTime) MarshalJSON() ([]byte, error) {
 
 func (c *CustomMoney) MarshalJSON() ([]byte, error) {
 	i := int64(*c)
-	base := i / fractionalNumber
-	fraction := i % fractionalNumber
-	if fraction == 0 {
-		logger.Log.Debug("Round MarshalJSON", zap.String("string", strconv.FormatInt(base, 10)), zap.Int64("Int64", int64(*c)))
+	base := i / 100
+	fraction := i % 100
+	switch {
+	case fraction == 0:
 		return []byte(strconv.FormatInt(base, 10)), nil
-	}
-	if fraction > 0 && fraction < 10 {
-		logger.Log.Debug("Round MarshalJSON", zap.String("string", strconv.FormatInt(base, 10)+"."+strconv.FormatInt(fraction, 10)), zap.Int64("Int64", int64(*c)))
+	case fraction > 0 && fraction < 10:
 		return []byte(strconv.FormatInt(base, 10) + ".0" + strconv.FormatInt(fraction, 10)), nil
-	}
-	if slices.Contains([]int64{10, 20, 30, 40, 50, 60, 70, 80, 90}, fraction) {
+	case fraction%10 == 0:
 		fraction = fraction / 10
-		logger.Log.Debug("Round MarshalJSON", zap.String("string", strconv.FormatInt(base, 10)+"."+strconv.FormatInt(fraction, 10)), zap.Int64("Int64", int64(*c)))
+		return []byte(strconv.FormatInt(base, 10) + "." + strconv.FormatInt(fraction, 10)), nil
+	default:
 		return []byte(strconv.FormatInt(base, 10) + "." + strconv.FormatInt(fraction, 10)), nil
 	}
-	logger.Log.Debug("Round MarshalJSON", zap.String("string", strconv.FormatInt(base, 10)+"."+strconv.FormatInt(fraction, 10)), zap.Int64("Int64", int64(*c)))
-	return []byte(strconv.FormatInt(base, 10) + "." + strconv.FormatInt(fraction, 10)), nil
 }
 
 func (c *CustomMoney) UnmarshalJSON(data []byte) error {
@@ -48,9 +42,11 @@ func (c *CustomMoney) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &v); err != nil {
 		return err
 	}
-	tmp := CustomMoney(math.Round(v * fractionalNumber))
+	tmp := CustomMoney(math.Round(v * 100))
 	*c = tmp
-	logger.Log.Debug("Round UnmarshalJSON", zap.Float64("float64", v), zap.Int64("Int64", int64(*c)))
+	logger.Log.Debug("Round UnmarshalJSON",
+		zap.Float64("float64", v),
+		zap.Int64("Int64", int64(*c)))
 	return nil
 }
 
