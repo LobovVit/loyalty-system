@@ -34,7 +34,7 @@ func (a *Server) Run(ctx context.Context) error {
 
 	mux := chi.NewRouter()
 	mux.Use(a.WithLogging)
-	mux.Use(a.WithCompress)
+	//mux.Use(a.WithCompress)
 
 	mux.Post("/api/user/register", a.registerNewUser) //регистрация пользователя;
 	mux.Post("/api/user/login", a.loginUser)          //аутентификация пользователя;

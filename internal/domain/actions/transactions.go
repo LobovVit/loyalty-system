@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -73,7 +74,7 @@ func GetTransactionRepo(ctx context.Context, config *config.Config) (Transaction
 		client: resty.New().
 			SetBaseURL(config.AccrualHost).
 			SetRetryCount(3).
-			SetTimeout(time.Second * 3),
+			SetRetryWaitTime(3 * time.Second),
 	}, nil
 }
 
@@ -111,7 +112,11 @@ func (o *TransactionRepo) GetAllOrders(ctx context.Context, UserID int64) (*[]do
 	if ret == nil {
 		return nil, NotExists
 	}
-	return ret, nil
+	sortedRet := *ret
+	sort.Slice(sortedRet[:], func(i, j int) (less bool) {
+		return time.Time(sortedRet[i].UploadedAt).After(time.Time(sortedRet[j].UploadedAt))
+	})
+	return &sortedRet, nil
 }
 
 func (o *TransactionRepo) GetBalance(ctx context.Context, UserID int64) (*domain.Balance, error) {
@@ -128,7 +133,11 @@ func (o *TransactionRepo) GetAllWithdraw(ctx context.Context, UserID int64) (*[]
 	if ret == nil {
 		return nil, NotExists
 	}
-	return ret, nil
+	sortedRet := *ret
+	sort.Slice(sortedRet[:], func(i, j int) (less bool) {
+		return time.Time(sortedRet[i].ProcessedAt).After(time.Time(sortedRet[j].ProcessedAt))
+	})
+	return &sortedRet, nil
 }
 
 func (o *TransactionRepo) NewWithdraw(ctx context.Context, newWithdraw domain.Withdraw) error {
@@ -297,11 +306,9 @@ func (o *TransactionRepo) RunProcessing(ctx context.Context, batchLimit int, sen
 				pause, err := o.processingBatchOrders(ctx, batchLimit, sendLimit)
 				if err != nil {
 					logger.Log.Error("Processing", zap.Error(err))
-					return
 				}
 				if pause > 0 {
 					pauseChan <- pause
-					return
 				}
 				logger.Log.Info("Processed")
 			case pause := <-pauseChan:

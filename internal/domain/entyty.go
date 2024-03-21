@@ -5,9 +5,6 @@ import (
 	"math"
 	"strconv"
 	"time"
-
-	"github.com/LobovVit/loyalty-system/pkg/logger"
-	"go.uber.org/zap"
 )
 
 type CustomTime time.Time
@@ -21,20 +18,9 @@ func (c CustomTime) MarshalJSON() ([]byte, error) {
 }
 
 func (c *CustomMoney) MarshalJSON() ([]byte, error) {
-	i := int64(*c)
-	base := i / 100
-	fraction := i % 100
-	switch {
-	case fraction == 0:
-		return []byte(strconv.FormatInt(base, 10)), nil
-	case fraction > 0 && fraction < 10:
-		return []byte(strconv.FormatInt(base, 10) + ".0" + strconv.FormatInt(fraction, 10)), nil
-	case fraction%10 == 0:
-		fraction = fraction / 10
-		return []byte(strconv.FormatInt(base, 10) + "." + strconv.FormatInt(fraction, 10)), nil
-	default:
-		return []byte(strconv.FormatInt(base, 10) + "." + strconv.FormatInt(fraction, 10)), nil
-	}
+	i := float64(*c)
+	i = i / 100
+	return []byte(strconv.FormatFloat(i, 'f', 2, 64)), nil
 }
 
 func (c *CustomMoney) UnmarshalJSON(data []byte) error {
@@ -44,9 +30,6 @@ func (c *CustomMoney) UnmarshalJSON(data []byte) error {
 	}
 	tmp := CustomMoney(math.Round(v * 100))
 	*c = tmp
-	logger.Log.Debug("Round UnmarshalJSON",
-		zap.Float64("float64", v),
-		zap.Int64("Int64", int64(*c)))
 	return nil
 }
 
