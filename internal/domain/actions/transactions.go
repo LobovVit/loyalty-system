@@ -31,9 +31,9 @@ var ErrNotExists = errors.New("no transactionStorage")
 var ErrInsufficientFounds = errors.New("there are insufficient funds in the account")
 
 type TransactionRepo struct {
-	transactionStorage transactionStorage
-	balanceRWMutex     sync.RWMutex
-	client             *resty.Client
+	transactionStorage
+	balanceRWMutex sync.RWMutex
+	client         *resty.Client
 }
 
 type transactionStorage interface {
