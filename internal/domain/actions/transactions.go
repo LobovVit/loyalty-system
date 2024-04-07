@@ -38,13 +38,13 @@ import (
 //func (e NotExistsErr) Error() string                { return string(e) }
 //func (e InsufficientFoundsErr) Error() string       { return string(e) }
 
-var OrderUploadedCurrUser = errors.New("the order number has already been uploaded by this user")
-var OrderUploadedAnotherUser = errors.New("the order number has already been uploaded by another user")
-var OrderAccepted = errors.New("the new order number has been accepted for processing")
-var UnexpectedReturn = errors.New("unexpected error")
-var OrderFormat = errors.New("incorrect order number format")
-var NotExists = errors.New("no transactionStorage")
-var InsufficientFounds = errors.New("there are insufficient funds in the account")
+var ErrOrderUploadedCurrUser = errors.New("the order number has already been uploaded by this user")
+var ErrOrderUploadedAnotherUser = errors.New("the order number has already been uploaded by another user")
+var ErrOrderAccepted = errors.New("the new order number has been accepted for processing")
+var ErrUnexpectedReturn = errors.New("unexpected error")
+var ErrOrderFormat = errors.New("incorrect order number format")
+var ErrNotExists = errors.New("no transactionStorage")
+var ErrInsufficientFounds = errors.New("there are insufficient funds in the account")
 
 type TransactionRepo struct {
 	transactionStorage transactionStorage
@@ -82,7 +82,7 @@ func GetTransactionRepo(ctx context.Context, config *config.Config) (Transaction
 func (o *TransactionRepo) NewOrder(ctx context.Context, userID int64, orderNum string) error {
 	orderInt, err := strconv.ParseInt(orderNum, 10, 64)
 	if err != nil || !security.ValidLuhn(orderInt) {
-		return OrderFormat
+		return ErrOrderFormat
 	}
 	order, err := retry.DoWithReturn(ctx, 3, o.transactionStorage.GetOrder, &orderNum, o.transactionStorage.IsRetryable)
 	switch {
@@ -95,13 +95,13 @@ func (o *TransactionRepo) NewOrder(ctx context.Context, userID int64, orderNum s
 		if err != nil {
 			return fmt.Errorf("add order: %w", err)
 		}
-		return OrderAccepted
+		return ErrOrderAccepted
 	case order.UserID == userID:
-		return OrderUploadedCurrUser
+		return ErrOrderUploadedCurrUser
 	case order.UserID != userID:
-		return OrderUploadedAnotherUser
+		return ErrOrderUploadedAnotherUser
 	default:
-		return UnexpectedReturn
+		return ErrUnexpectedReturn
 	}
 }
 
@@ -111,7 +111,7 @@ func (o *TransactionRepo) GetAllOrders(ctx context.Context, UserID int64) (*[]do
 		return nil, err
 	}
 	if ret == nil {
-		return nil, NotExists
+		return nil, ErrNotExists
 	}
 	sortedRet := *ret
 	sort.Slice(sortedRet[:], func(i, j int) (less bool) {
@@ -132,7 +132,7 @@ func (o *TransactionRepo) GetAllWithdraw(ctx context.Context, UserID int64) (*[]
 		return nil, fmt.Errorf("get all withdraw: %w", err)
 	}
 	if ret == nil {
-		return nil, NotExists
+		return nil, ErrNotExists
 	}
 	sortedRet := *ret
 	sort.Slice(sortedRet[:], func(i, j int) (less bool) {
@@ -144,7 +144,7 @@ func (o *TransactionRepo) GetAllWithdraw(ctx context.Context, UserID int64) (*[]
 func (o *TransactionRepo) NewWithdraw(ctx context.Context, newWithdraw domain.Withdraw) error {
 	orderInt, err := strconv.ParseInt(newWithdraw.Order, 10, 64)
 	if err != nil || !security.ValidLuhn(orderInt) {
-		return OrderFormat
+		return ErrOrderFormat
 	}
 	withdraw, err := retry.DoWithReturn(ctx, 3, o.transactionStorage.GetWithdraw, &newWithdraw.Order, o.transactionStorage.IsRetryable)
 	switch {
@@ -159,7 +159,7 @@ func (o *TransactionRepo) NewWithdraw(ctx context.Context, newWithdraw domain.Wi
 			return fmt.Errorf("chek balance: %w", err)
 		}
 		if bal.Current < newWithdraw.Sum {
-			return InsufficientFounds
+			return ErrInsufficientFounds
 		}
 		err = retry.DoWithoutReturn(ctx, 3, o.transactionStorage.AddWithdraw, withdraw, o.transactionStorage.IsRetryable)
 		if err != nil {
@@ -167,11 +167,11 @@ func (o *TransactionRepo) NewWithdraw(ctx context.Context, newWithdraw domain.Wi
 		}
 		return nil
 	case withdraw.UserID == newWithdraw.UserID:
-		return OrderUploadedCurrUser
+		return ErrOrderUploadedCurrUser
 	case withdraw.UserID != newWithdraw.UserID:
-		return OrderUploadedAnotherUser
+		return ErrOrderUploadedAnotherUser
 	default:
-		return UnexpectedReturn
+		return ErrUnexpectedReturn
 	}
 }
 
@@ -207,7 +207,7 @@ func (o *TransactionRepo) getAccrual(ctx context.Context, orderNumber *string) (
 		}
 		return &accrual, nil, nil
 	}
-	return nil, nil, UnexpectedReturn
+	return nil, nil, ErrUnexpectedReturn
 }
 
 func (o *TransactionRepo) getUnprocessedOrders(ctx context.Context, batchLimit int) (*[]domain.Order, error) {
@@ -216,7 +216,7 @@ func (o *TransactionRepo) getUnprocessedOrders(ctx context.Context, batchLimit i
 		return nil, fmt.Errorf("get unprocessed: %w", err)
 	}
 	if ret == nil {
-		return nil, NotExists
+		return nil, ErrNotExists
 	}
 	return ret, nil
 }

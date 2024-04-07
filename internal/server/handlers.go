@@ -114,18 +114,18 @@ func (a *Server) loadOrders(w http.ResponseWriter, r *http.Request) {
 	err = a.transactionStorage.NewOrder(r.Context(), userID, orderNum)
 	w.Header().Set("Content-Type", "text/plain")
 	switch {
-	case errors.Is(err, actions.OrderAccepted):
+	case errors.Is(err, actions.ErrOrderAccepted):
 		w.WriteHeader(http.StatusAccepted)
-	case errors.Is(err, actions.OrderUploadedCurrUser):
+	case errors.Is(err, actions.ErrOrderUploadedCurrUser):
 		w.WriteHeader(http.StatusOK)
-	case errors.Is(err, actions.OrderFormat):
+	case errors.Is(err, actions.ErrOrderFormat):
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
-	case errors.Is(err, actions.OrderUploadedAnotherUser):
+	case errors.Is(err, actions.ErrOrderUploadedAnotherUser):
 		http.Error(w, err.Error(), http.StatusConflict)
-	case errors.Is(err, actions.UnexpectedReturn):
+	case errors.Is(err, actions.ErrUnexpectedReturn):
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	default:
-		http.Error(w, actions.UnexpectedReturn.Error(), http.StatusInternalServerError)
+		http.Error(w, actions.ErrUnexpectedReturn.Error(), http.StatusInternalServerError)
 	}
 
 }
@@ -139,7 +139,7 @@ func (a *Server) getOrders(w http.ResponseWriter, r *http.Request) {
 	orders, err := a.transactionStorage.GetAllOrders(r.Context(), userID)
 	if err != nil {
 		switch {
-		case errors.Is(err, actions.NotExists):
+		case errors.Is(err, actions.ErrNotExists):
 			w.WriteHeader(http.StatusNoContent)
 		default:
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -196,13 +196,13 @@ func (a *Server) debitingFunds(w http.ResponseWriter, r *http.Request) {
 	err = a.transactionStorage.NewWithdraw(r.Context(), withdraw)
 	if err != nil {
 		switch {
-		case errors.Is(err, actions.InsufficientFounds):
+		case errors.Is(err, actions.ErrInsufficientFounds):
 			http.Error(w, err.Error(), http.StatusPaymentRequired)
-		case errors.Is(err, actions.OrderUploadedCurrUser):
+		case errors.Is(err, actions.ErrOrderUploadedCurrUser):
 			w.WriteHeader(http.StatusOK)
-		case errors.Is(err, actions.OrderFormat):
+		case errors.Is(err, actions.ErrOrderFormat):
 			http.Error(w, err.Error(), http.StatusUnprocessableEntity)
-		case errors.Is(err, actions.OrderUploadedAnotherUser):
+		case errors.Is(err, actions.ErrOrderUploadedAnotherUser):
 			http.Error(w, err.Error(), http.StatusConflict)
 		default:
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -220,7 +220,7 @@ func (a *Server) debitHistory(w http.ResponseWriter, r *http.Request) {
 	withdraws, err := a.transactionStorage.GetAllWithdraw(r.Context(), userID)
 	if err != nil {
 		switch {
-		case errors.Is(err, actions.NotExists):
+		case errors.Is(err, actions.ErrNotExists):
 			w.WriteHeader(http.StatusNoContent)
 		default:
 			http.Error(w, err.Error(), http.StatusInternalServerError)
