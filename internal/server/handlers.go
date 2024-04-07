@@ -30,7 +30,7 @@ func (a *Server) registerNewUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = a.userStorage.NewUser(r.Context(), user.Login, user.Password, a.config.Salt)
-	if err != nil && errors.Is(err, actions.UserExists) {
+	if err != nil && errors.Is(err, actions.ErrUserExists) {
 		http.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
@@ -42,9 +42,9 @@ func (a *Server) registerNewUser(w http.ResponseWriter, r *http.Request) {
 	userID, err := a.userStorage.LoginUser(r.Context(), user.Login, user.Password, a.config.Salt)
 	if err != nil {
 		switch {
-		case errors.Is(err, actions.WrongPassword):
+		case errors.Is(err, actions.ErrWrongPassword):
 			http.Error(w, err.Error(), http.StatusUnauthorized)
-		case errors.Is(err, actions.UserNotExists):
+		case errors.Is(err, actions.ErrUserNotExists):
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 		default:
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -79,9 +79,9 @@ func (a *Server) loginUser(w http.ResponseWriter, r *http.Request) {
 	userID, err := a.userStorage.LoginUser(r.Context(), user.Login, user.Password, a.config.Salt)
 	if err != nil {
 		switch {
-		case errors.Is(err, actions.WrongPassword):
+		case errors.Is(err, actions.ErrWrongPassword):
 			http.Error(w, err.Error(), http.StatusUnauthorized)
-		case errors.Is(err, actions.UserNotExists):
+		case errors.Is(err, actions.ErrUserNotExists):
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 		default:
 			http.Error(w, err.Error(), http.StatusInternalServerError)

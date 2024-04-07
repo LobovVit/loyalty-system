@@ -22,22 +22,6 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-//type OrderUploadedCurrUserErr string
-//type OrderUploadedAnotherUserErr string
-//type OrderAcceptedErr string
-//type UnexpectedErr string
-//type OrderFormatErr string
-//type NotExistsErr string
-//type InsufficientFoundsErr string
-//
-//func (e OrderUploadedCurrUserErr) Error() string    { return string(e) }
-//func (e OrderUploadedAnotherUserErr) Error() string { return string(e) }
-//func (e OrderAcceptedErr) Error() string            { return string(e) }
-//func (e UnexpectedErr) Error() string               { return string(e) }
-//func (e OrderFormatErr) Error() string              { return string(e) }
-//func (e NotExistsErr) Error() string                { return string(e) }
-//func (e InsufficientFoundsErr) Error() string       { return string(e) }
-
 var ErrOrderUploadedCurrUser = errors.New("the order number has already been uploaded by this user")
 var ErrOrderUploadedAnotherUser = errors.New("the order number has already been uploaded by another user")
 var ErrOrderAccepted = errors.New("the new order number has been accepted for processing")
