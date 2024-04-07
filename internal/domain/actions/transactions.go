@@ -3,6 +3,7 @@ package actions
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"sort"
@@ -21,29 +22,29 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type OrderUploadedCurrUserErr string
-type OrderUploadedAnotherUserErr string
-type OrderAcceptedErr string
-type UnexpectedErr string
-type OrderFormatErr string
-type NotExistsErr string
-type InsufficientFoundsErr string
+//type OrderUploadedCurrUserErr string
+//type OrderUploadedAnotherUserErr string
+//type OrderAcceptedErr string
+//type UnexpectedErr string
+//type OrderFormatErr string
+//type NotExistsErr string
+//type InsufficientFoundsErr string
+//
+//func (e OrderUploadedCurrUserErr) Error() string    { return string(e) }
+//func (e OrderUploadedAnotherUserErr) Error() string { return string(e) }
+//func (e OrderAcceptedErr) Error() string            { return string(e) }
+//func (e UnexpectedErr) Error() string               { return string(e) }
+//func (e OrderFormatErr) Error() string              { return string(e) }
+//func (e NotExistsErr) Error() string                { return string(e) }
+//func (e InsufficientFoundsErr) Error() string       { return string(e) }
 
-func (e OrderUploadedCurrUserErr) Error() string    { return string(e) }
-func (e OrderUploadedAnotherUserErr) Error() string { return string(e) }
-func (e OrderAcceptedErr) Error() string            { return string(e) }
-func (e UnexpectedErr) Error() string               { return string(e) }
-func (e OrderFormatErr) Error() string              { return string(e) }
-func (e NotExistsErr) Error() string                { return string(e) }
-func (e InsufficientFoundsErr) Error() string       { return string(e) }
-
-const OrderUploadedCurrUser OrderUploadedCurrUserErr = "the order number has already been uploaded by this user"
-const OrderUploadedAnotherUser OrderUploadedAnotherUserErr = "the order number has already been uploaded by another user"
-const OrderAccepted OrderAcceptedErr = "the new order number has been accepted for processing"
-const UnexpectedReturn UnexpectedErr = "unexpected error"
-const OrderFormat OrderFormatErr = "incorrect order number format"
-const NotExists NotExistsErr = "no transactionStorage"
-const InsufficientFounds InsufficientFoundsErr = "there are insufficient funds in the account"
+var OrderUploadedCurrUser = errors.New("the order number has already been uploaded by this user")
+var OrderUploadedAnotherUser = errors.New("the order number has already been uploaded by another user")
+var OrderAccepted = errors.New("the new order number has been accepted for processing")
+var UnexpectedReturn = errors.New("unexpected error")
+var OrderFormat = errors.New("incorrect order number format")
+var NotExists = errors.New("no transactionStorage")
+var InsufficientFounds = errors.New("there are insufficient funds in the account")
 
 type TransactionRepo struct {
 	transactionStorage transactionStorage

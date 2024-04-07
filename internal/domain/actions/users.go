@@ -2,6 +2,7 @@ package actions
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/LobovVit/loyalty-system/internal/config"
@@ -11,17 +12,17 @@ import (
 	"github.com/LobovVit/loyalty-system/pkg/security"
 )
 
-type UserExistsErr string
-type WrongPasswordErr string
-type UserNotExistsErr string
+//type UserExistsErr string
+//type WrongPasswordErr string
+//type UserNotExistsErr string
+//
+//func (e UserExistsErr) Error() string    { return string(e) }
+//func (e WrongPasswordErr) Error() string { return string(e) }
+//func (e UserNotExistsErr) Error() string { return string(e) }
 
-func (e UserExistsErr) Error() string    { return string(e) }
-func (e WrongPasswordErr) Error() string { return string(e) }
-func (e UserNotExistsErr) Error() string { return string(e) }
-
-const UserExists UserExistsErr = "user already exists"
-const WrongPassword WrongPasswordErr = "wrong password"
-const UserNotExists UserNotExistsErr = "no such user"
+var UserExists = errors.New("user already exists")
+var WrongPassword = errors.New("wrong password")
+var UserNotExists = errors.New("no such user")
 
 type UserStorage struct {
 	userStorage users
