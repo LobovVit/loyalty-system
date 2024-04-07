@@ -2,6 +2,7 @@ package actions
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/LobovVit/loyalty-system/internal/config"
@@ -11,17 +12,9 @@ import (
 	"github.com/LobovVit/loyalty-system/pkg/security"
 )
 
-type UserExistsErr string
-type WrongPasswordErr string
-type UserNotExistsErr string
-
-func (e UserExistsErr) Error() string    { return string(e) }
-func (e WrongPasswordErr) Error() string { return string(e) }
-func (e UserNotExistsErr) Error() string { return string(e) }
-
-const UserExists UserExistsErr = "user already exists"
-const WrongPassword WrongPasswordErr = "wrong password"
-const UserNotExists UserNotExistsErr = "no such user"
+var ErrUserExists = errors.New("user already exists")
+var ErrWrongPassword = errors.New("wrong password")
+var ErrUserNotExists = errors.New("no such user")
 
 type UserStorage struct {
 	userStorage users
@@ -47,7 +40,7 @@ func (u *UserStorage) NewUser(ctx context.Context, login string, password string
 		return fmt.Errorf("get user: %w", err)
 	}
 	if user != nil {
-		return UserExists
+		return ErrUserExists
 	}
 	user = &domain.User{}
 	user.Login = login
@@ -65,10 +58,10 @@ func (u *UserStorage) LoginUser(ctx context.Context, login string, password stri
 		return -1, fmt.Errorf("login user: %w", err)
 	}
 	if user == nil {
-		return -1, UserNotExists
+		return -1, ErrUserNotExists
 	}
 	if !security.CheckHash(password, user.Hash, salt) {
-		return -1, WrongPassword
+		return -1, ErrWrongPassword
 	}
 	return user.UserID, nil
 }
