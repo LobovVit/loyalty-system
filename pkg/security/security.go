@@ -71,7 +71,7 @@ func checksum(number int64) int64 {
 			}
 		}
 		luhn += cur
-		number = number / 10
+		number /= 10
 	}
 	return luhn % 10
 }
