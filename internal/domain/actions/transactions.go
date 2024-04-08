@@ -89,7 +89,7 @@ func (o *TransactionRepo) NewOrder(ctx context.Context, userID int64, orderNum s
 	}
 }
 
-func (o *TransactionRepo) GetAllOrders(ctx context.Context, UserID int64) (*[]domain.Order, error) {
+func (o *TransactionRepo) GetAllOrders(ctx context.Context, UserID *int64) (*[]domain.Order, error) {
 	ret, err := retry.DoWithReturn(ctx, 3, o.GetAllOrders, UserID, o.IsRetryable)
 	if err != nil {
 		return nil, err
@@ -104,13 +104,13 @@ func (o *TransactionRepo) GetAllOrders(ctx context.Context, UserID int64) (*[]do
 	return &sortedRet, nil
 }
 
-func (o *TransactionRepo) GetBalance(ctx context.Context, UserID int64) (*domain.Balance, error) {
+func (o *TransactionRepo) GetBalance(ctx context.Context, UserID *int64) (*domain.Balance, error) {
 	o.balanceRWMutex.RLock()
 	defer o.balanceRWMutex.RUnlock()
 	return retry.DoWithReturn(ctx, 3, o.GetBalance, UserID, o.IsRetryable)
 }
 
-func (o *TransactionRepo) GetAllWithdraw(ctx context.Context, UserID int64) (*[]domain.Withdraw, error) {
+func (o *TransactionRepo) GetAllWithdraw(ctx context.Context, UserID *int64) (*[]domain.Withdraw, error) {
 	ret, err := retry.DoWithReturn(ctx, 3, o.GetAllWithdraw, UserID, o.IsRetryable)
 	if err != nil {
 		return nil, fmt.Errorf("get all withdraw: %w", err)
@@ -138,7 +138,7 @@ func (o *TransactionRepo) NewWithdraw(ctx context.Context, newWithdraw domain.Wi
 		withdraw = &domain.Withdraw{UserID: newWithdraw.UserID, Order: newWithdraw.Order, Sum: newWithdraw.Sum, ProcessedAt: domain.CustomTime(time.Now())}
 		o.balanceRWMutex.Lock()
 		defer o.balanceRWMutex.Unlock()
-		bal, err := retry.DoWithReturn(ctx, 3, o.GetBalance, newWithdraw.UserID, o.IsRetryable)
+		bal, err := retry.DoWithReturn(ctx, 3, o.GetBalance, &newWithdraw.UserID, o.IsRetryable)
 		if err != nil {
 			return fmt.Errorf("chek balance: %w", err)
 		}
