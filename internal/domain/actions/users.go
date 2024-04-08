@@ -17,7 +17,7 @@ var ErrWrongPassword = errors.New("wrong password")
 var ErrUserNotExists = errors.New("no such user")
 
 type UserStorage struct {
-	userStorage users
+	users
 }
 
 type users interface {
@@ -31,11 +31,11 @@ func GetUserStorage(ctx context.Context, config *config.Config) (UserStorage, er
 	if err != nil {
 		return UserStorage{}, fmt.Errorf("get user storage: %w", err)
 	}
-	return UserStorage{userStorage: storage}, nil
+	return UserStorage{users: storage}, nil
 }
 
 func (u *UserStorage) NewUser(ctx context.Context, login string, password string, salt string) error {
-	user, err := retry.DoWithReturn(ctx, 3, u.userStorage.GetUser, &login, u.userStorage.IsRetryable)
+	user, err := retry.DoWithReturn(ctx, 3, u.GetUser, &login, u.IsRetryable)
 	if err != nil {
 		return fmt.Errorf("get user: %w", err)
 	}
@@ -45,7 +45,7 @@ func (u *UserStorage) NewUser(ctx context.Context, login string, password string
 	user = &domain.User{}
 	user.Login = login
 	user.Hash = security.CreateHash(password, salt)
-	err = retry.DoWithoutReturn(ctx, 3, u.userStorage.AddUser, user, u.userStorage.IsRetryable)
+	err = retry.DoWithoutReturn(ctx, 3, u.AddUser, user, u.IsRetryable)
 	if err != nil {
 		return fmt.Errorf("new user: %w", err)
 	}
@@ -53,7 +53,7 @@ func (u *UserStorage) NewUser(ctx context.Context, login string, password string
 }
 
 func (u *UserStorage) LoginUser(ctx context.Context, login string, password string, salt string) (int64, error) {
-	user, err := retry.DoWithReturn(ctx, 3, u.userStorage.GetUser, &login, u.userStorage.IsRetryable)
+	user, err := retry.DoWithReturn(ctx, 3, u.GetUser, &login, u.IsRetryable)
 	if err != nil {
 		return -1, fmt.Errorf("login user: %w", err)
 	}
