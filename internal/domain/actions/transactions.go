@@ -68,14 +68,14 @@ func (o *TransactionRepo) NewOrder(ctx context.Context, userID int64, orderNum s
 	if err != nil || !security.ValidLuhn(orderInt) {
 		return ErrOrderFormat
 	}
-	order, err := retry.DoWithReturn(ctx, 3, o.GetOrder, &orderNum, o.IsRetryable)
+	order, err := retry.DoWithReturn(ctx, 3, o.transactionStorage.GetOrder, &orderNum, o.transactionStorage.IsRetryable)
 	switch {
 	case err != nil:
 		return fmt.Errorf("get order: %w", err)
 	case order == nil:
 		amount := domain.CustomMoney(0)
 		order = &domain.Order{UserID: userID, Number: orderNum, Status: "NEW", Accrual: &amount, UploadedAt: domain.CustomTime(time.Now())}
-		err = retry.DoWithoutReturn(ctx, 3, o.AddOrder, order, o.IsRetryable)
+		err = retry.DoWithoutReturn(ctx, 3, o.transactionStorage.AddOrder, order, o.transactionStorage.IsRetryable)
 		if err != nil {
 			return fmt.Errorf("add order: %w", err)
 		}
@@ -89,8 +89,8 @@ func (o *TransactionRepo) NewOrder(ctx context.Context, userID int64, orderNum s
 	}
 }
 
-func (o *TransactionRepo) GetAllOrders(ctx context.Context, UserID *int64) (*[]domain.Order, error) {
-	ret, err := retry.DoWithReturn(ctx, 3, o.GetAllOrders, UserID, o.IsRetryable)
+func (o *TransactionRepo) GetAllOrders(ctx context.Context, UserID int64) (*[]domain.Order, error) {
+	ret, err := retry.DoWithReturn(ctx, 3, o.transactionStorage.GetAllOrders, &UserID, o.transactionStorage.IsRetryable)
 	if err != nil {
 		return nil, err
 	}
@@ -104,14 +104,14 @@ func (o *TransactionRepo) GetAllOrders(ctx context.Context, UserID *int64) (*[]d
 	return &sortedRet, nil
 }
 
-func (o *TransactionRepo) GetBalance(ctx context.Context, UserID *int64) (*domain.Balance, error) {
+func (o *TransactionRepo) GetBalance(ctx context.Context, UserID int64) (*domain.Balance, error) {
 	o.balanceRWMutex.RLock()
 	defer o.balanceRWMutex.RUnlock()
-	return retry.DoWithReturn(ctx, 3, o.GetBalance, UserID, o.IsRetryable)
+	return retry.DoWithReturn(ctx, 3, o.transactionStorage.GetBalance, &UserID, o.transactionStorage.IsRetryable)
 }
 
-func (o *TransactionRepo) GetAllWithdraw(ctx context.Context, UserID *int64) (*[]domain.Withdraw, error) {
-	ret, err := retry.DoWithReturn(ctx, 3, o.GetAllWithdraw, UserID, o.IsRetryable)
+func (o *TransactionRepo) GetAllWithdraw(ctx context.Context, UserID int64) (*[]domain.Withdraw, error) {
+	ret, err := retry.DoWithReturn(ctx, 3, o.transactionStorage.GetAllWithdraw, &UserID, o.transactionStorage.IsRetryable)
 	if err != nil {
 		return nil, fmt.Errorf("get all withdraw: %w", err)
 	}
@@ -130,7 +130,7 @@ func (o *TransactionRepo) NewWithdraw(ctx context.Context, newWithdraw domain.Wi
 	if err != nil || !security.ValidLuhn(orderInt) {
 		return ErrOrderFormat
 	}
-	withdraw, err := retry.DoWithReturn(ctx, 3, o.GetWithdraw, &newWithdraw.Order, o.IsRetryable)
+	withdraw, err := retry.DoWithReturn(ctx, 3, o.transactionStorage.GetWithdraw, &newWithdraw.Order, o.transactionStorage.IsRetryable)
 	switch {
 	case err != nil:
 		return fmt.Errorf("get withdraw: %w", err)
@@ -138,14 +138,14 @@ func (o *TransactionRepo) NewWithdraw(ctx context.Context, newWithdraw domain.Wi
 		withdraw = &domain.Withdraw{UserID: newWithdraw.UserID, Order: newWithdraw.Order, Sum: newWithdraw.Sum, ProcessedAt: domain.CustomTime(time.Now())}
 		o.balanceRWMutex.Lock()
 		defer o.balanceRWMutex.Unlock()
-		bal, err := retry.DoWithReturn(ctx, 3, o.GetBalance, &newWithdraw.UserID, o.IsRetryable)
+		bal, err := retry.DoWithReturn(ctx, 3, o.transactionStorage.GetBalance, &newWithdraw.UserID, o.transactionStorage.IsRetryable)
 		if err != nil {
 			return fmt.Errorf("chek balance: %w", err)
 		}
 		if bal.Current < newWithdraw.Sum {
 			return ErrInsufficientFounds
 		}
-		err = retry.DoWithoutReturn(ctx, 3, o.AddWithdraw, withdraw, o.IsRetryable)
+		err = retry.DoWithoutReturn(ctx, 3, o.transactionStorage.AddWithdraw, withdraw, o.transactionStorage.IsRetryable)
 		if err != nil {
 			return fmt.Errorf("add withdraw: %w", err)
 		}
@@ -195,7 +195,7 @@ func (o *TransactionRepo) getAccrual(ctx context.Context, orderNumber *string) (
 }
 
 func (o *TransactionRepo) getUnprocessedOrders(ctx context.Context, batchLimit int) (*[]domain.Order, error) {
-	ret, err := retry.DoWithReturn(ctx, 3, o.GetUnprocessedOrders, &batchLimit, o.IsRetryable)
+	ret, err := retry.DoWithReturn(ctx, 3, o.transactionStorage.GetUnprocessedOrders, &batchLimit, o.transactionStorage.IsRetryable)
 	if err != nil {
 		return nil, fmt.Errorf("get unprocessed: %w", err)
 	}
@@ -208,7 +208,7 @@ func (o *TransactionRepo) getUnprocessedOrders(ctx context.Context, batchLimit i
 func (o *TransactionRepo) setProcessedAccruals(ctx context.Context, accrual *[]domain.Accrual) error {
 	o.balanceRWMutex.RLock()
 	defer o.balanceRWMutex.RUnlock()
-	return retry.DoWithoutReturn(ctx, 3, o.SetProcessedAccruals, accrual, o.IsRetryable)
+	return retry.DoWithoutReturn(ctx, 3, o.transactionStorage.SetProcessedAccruals, accrual, o.transactionStorage.IsRetryable)
 }
 
 func (o *TransactionRepo) processingBatchOrders(ctx context.Context, batchLimit int, SendLimit int) (int, error) {

@@ -136,7 +136,7 @@ func (a *Server) getOrders(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 	}
 	//
-	orders, err := a.transactionStorage.GetAllOrders(r.Context(), &userID)
+	orders, err := a.transactionStorage.GetAllOrders(r.Context(), userID)
 	if err != nil {
 		switch {
 		case errors.Is(err, actions.ErrNotExists):
@@ -161,7 +161,7 @@ func (a *Server) getBalance(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 	}
 	//
-	balance, err := a.transactionStorage.GetBalance(r.Context(), &userID)
+	balance, err := a.transactionStorage.GetBalance(r.Context(), userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -217,7 +217,7 @@ func (a *Server) debitHistory(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 	}
 	//
-	withdraws, err := a.transactionStorage.GetAllWithdraw(r.Context(), &userID)
+	withdraws, err := a.transactionStorage.GetAllWithdraw(r.Context(), userID)
 	if err != nil {
 		switch {
 		case errors.Is(err, actions.ErrNotExists):
