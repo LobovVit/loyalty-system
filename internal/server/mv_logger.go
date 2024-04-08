@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/LobovVit/loyalty-system/pkg/logger"
 	"go.uber.org/zap"
+	"loyalty-system/pkg/logger"
 )
 
 type (

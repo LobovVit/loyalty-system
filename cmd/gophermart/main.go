@@ -6,9 +6,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/LobovVit/loyalty-system/internal/config"
-	"github.com/LobovVit/loyalty-system/internal/server"
-	"github.com/LobovVit/loyalty-system/pkg/logger"
+	"loyalty-system/internal/config"
+	"loyalty-system/internal/server"
+	"loyalty-system/pkg/logger"
 )
 
 func main() {

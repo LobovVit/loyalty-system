@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/LobovVit/loyalty-system/pkg/security"
+	"loyalty-system/pkg/security"
 )
 
 func (a *Server) Auth(h http.Handler) http.Handler {

@@ -11,15 +11,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/LobovVit/loyalty-system/internal/config"
-	"github.com/LobovVit/loyalty-system/internal/domain"
-	"github.com/LobovVit/loyalty-system/internal/domain/dbstorage/pgtransactions"
-	"github.com/LobovVit/loyalty-system/pkg/logger"
-	"github.com/LobovVit/loyalty-system/pkg/retry"
-	"github.com/LobovVit/loyalty-system/pkg/security"
 	"github.com/go-resty/resty/v2"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
+	"loyalty-system/internal/config"
+	"loyalty-system/internal/domain"
+	"loyalty-system/internal/domain/dbstorage/pgtransactions"
+	"loyalty-system/pkg/logger"
+	"loyalty-system/pkg/retry"
+	"loyalty-system/pkg/security"
 )
 
 var ErrOrderUploadedCurrUser = errors.New("the order number has already been uploaded by this user")

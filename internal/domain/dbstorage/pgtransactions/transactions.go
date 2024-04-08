@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/LobovVit/loyalty-system/internal/domain"
-	"github.com/LobovVit/loyalty-system/pkg/logger"
-	"github.com/LobovVit/loyalty-system/pkg/postgresql"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	"go.uber.org/zap"
+	"loyalty-system/internal/domain"
+	"loyalty-system/pkg/logger"
+	"loyalty-system/pkg/postgresql"
 )
 
 type PGOrdersStorage struct {

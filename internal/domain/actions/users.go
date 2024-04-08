@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/LobovVit/loyalty-system/internal/config"
-	"github.com/LobovVit/loyalty-system/internal/domain"
-	"github.com/LobovVit/loyalty-system/internal/domain/dbstorage/pgusers"
-	"github.com/LobovVit/loyalty-system/pkg/retry"
-	"github.com/LobovVit/loyalty-system/pkg/security"
+	"loyalty-system/internal/config"
+	"loyalty-system/internal/domain"
+	"loyalty-system/internal/domain/dbstorage/pgusers"
+	"loyalty-system/pkg/retry"
+	"loyalty-system/pkg/security"
 )
 
 var ErrUserExists = errors.New("user already exists")

@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/LobovVit/loyalty-system/internal/domain"
-	"github.com/LobovVit/loyalty-system/internal/domain/actions"
-	"github.com/LobovVit/loyalty-system/pkg/security"
+	"loyalty-system/internal/domain"
+	"loyalty-system/internal/domain/actions"
+	"loyalty-system/pkg/security"
 )
 
 func (a *Server) registerNewUser(w http.ResponseWriter, r *http.Request) {

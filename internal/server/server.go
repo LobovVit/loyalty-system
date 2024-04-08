@@ -4,12 +4,12 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/LobovVit/loyalty-system/internal/config"
-	"github.com/LobovVit/loyalty-system/internal/domain/actions"
-	"github.com/LobovVit/loyalty-system/pkg/logger"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
+	"loyalty-system/internal/config"
+	"loyalty-system/internal/domain/actions"
+	"loyalty-system/pkg/logger"
 )
 
 type Server struct {
